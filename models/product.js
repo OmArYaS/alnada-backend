@@ -10,21 +10,17 @@ const productSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
-  brand: {
+  address: {
     type: String,
-    required: false,
+    required: true,
   },
   stock: {
     type: Number,
-    required: false,
-  },
-  color: {
-    type: [String],
-    required: false,
+    required: true,
   },
   size: {
     type: String,
-    required: false,
+    required: true,
   },
   price: {
     type: Number,

@@ -76,7 +76,7 @@ export async function getProductById(req, res) {
 }
 
 export async function createProduct(req, res) {
-  const { name, brand, stock, color, size, price, description, category } =
+  const { name, stock, address, size, price, description, category } =
     req.body;
 
   // Ensure images are uploaded
@@ -84,7 +84,7 @@ export async function createProduct(req, res) {
     return res.status(400).json({ message: "At least one image is required" });
   }
 
-  if (!name || !price || !description || !category) {
+  if (!name || !price || !description || !category || !address || !stock) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -94,9 +94,8 @@ export async function createProduct(req, res) {
     const newProduct = new Product({
       name,
       images: imageUrls,
-      brand,
+      address,
       stock,
-      color,
       size,
       price,
       description,
@@ -167,7 +166,7 @@ export async function updateProduct(req, res) {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error45", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 
