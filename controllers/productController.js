@@ -20,6 +20,7 @@ export async function getProducts(req, res) {
       name,
       minPrice,
       maxPrice,
+      featured,
     } = req.query;
 
     const filter = {};
@@ -32,6 +33,10 @@ export async function getProducts(req, res) {
       filter.price = {};
       if (minPrice) filter.price.$gte = parseFloat(minPrice);
       if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+    }
+
+    if (featured !== undefined) {
+      filter.featured = featured === "true";
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -76,7 +81,7 @@ export async function getProductById(req, res) {
 }
 
 export async function createProduct(req, res) {
-  const { name, stock, address, size, price, description, category } =
+  const { name, address, size, price, description, category, state, featured } =
     req.body;
 
   // Ensure images are uploaded
@@ -84,7 +89,7 @@ export async function createProduct(req, res) {
     return res.status(400).json({ message: "At least one image is required" });
   }
 
-  if (!name || !price || !description || !category || !address || !stock) {
+  if (!name || !price || !description || !category || !address || !state) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -95,11 +100,12 @@ export async function createProduct(req, res) {
       name,
       images: imageUrls,
       address,
-      stock,
       size,
       price,
       description,
       category,
+      state,
+      featured: featured === "true" || featured === true,
     });
 
     const savedProduct = await newProduct.save();

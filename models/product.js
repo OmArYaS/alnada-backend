@@ -14,8 +14,8 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  stock: {
-    type: Number,
+  state: {
+    type: String,
     required: true,
   },
   size: {
@@ -29,6 +29,10 @@ const productSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
