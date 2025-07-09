@@ -7,7 +7,12 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   images: {
-    type: [String],
+    type: [
+      {
+        url: { type: String, required: true },
+        public_id: { type: String, required: true },
+      },
+    ],
     required: true,
   },
   address: {
@@ -44,12 +49,6 @@ const productSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-productSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  if (obj.images && Array.isArray(obj.images)) {
-    obj.images = obj.images.map((img) => `${process.env.BASE_URL}${img}`);
-  }
-  return obj;
-};
+// يمكن حذف دالة toJSON لأنها لم تعد مناسبة مع الشكل الجديد للصور
 
 export const Product = mongoose.model("Product", productSchema);
