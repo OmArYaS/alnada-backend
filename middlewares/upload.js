@@ -28,7 +28,7 @@ const upload = multer({ storage, fileFilter });
 export const uploadToCloudinary = async (buffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { resource_type: "image" },
+      { resource_type: "image", folder: "alnada" },
       (error, result) => {
         if (error) reject(error);
         else resolve({ url: result.secure_url, public_id: result.public_id });
