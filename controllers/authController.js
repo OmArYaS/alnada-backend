@@ -9,39 +9,38 @@ export async function register(req, res) {
     const { username, email, password, ...rest } = req.body;
     // تأكد من وجود كل الحقول المطلوبة
     if (!username || !email || !password)
-      return res.status(400).json({ message: "All fields are required." });
+      return res.status(400).json({ message: "كل الخانات مطلوبة." });
     // تأكد من أن الإيميل صحيح
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email))
-      return res.status(400).json({ message: "Invalid email format." });
+      return res.status(400).json({ message: "صيغة الإيميل غلط." });
     // تأكد من أن الباسورد قوي
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-
-    if (!passwordRegex.test(password))
+    if (password.length < 6)
       return res.status(400).json({
-        message:
-          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number, no symbols.",
+        message: "الباسورد لازم يكون 6 حروف أو أكتر.",
       });
     // تأكد من أن اليوزر نيم صحيح
     const usernameRegex = /^[a-zA-Z0-9_\s]{3,20}$/;
     if (!usernameRegex.test(username))
       return res.status(400).json({
         message:
-          "Username must be 3-20 characters long and can contain letters, numbers, underscores, and spaces.",
+          "اسم المستخدم لازم يكون من 3 لـ 20 حرف أو رقم أو أندرلاين أو مسافة.",
       });
     // تأكد من أن باقي الحقول صحيحة
     const restKeys = Object.keys(rest);
     const validKeys = ["age", "address", "phone"];
     for (const key of restKeys) {
       if (!validKeys.includes(key)) {
-        return res.status(400).json({ message: `Invalid field: ${key}` });
+        return res
+          .status(400)
+          .json({ message: `الخانة دي مش مسموح بيها: ${key}` });
       }
     }
     // تأكد من أن باقي الحقول صحيحة
 
     // هل الإيميل أو اليوزر موجودين؟
     if (await User.exists({ $or: [{ email }, { username }] }))
-      return res.status(409).json({ message: "User already exists." });
+      return res.status(409).json({ message: "المستخدم موجود بالفعل." });
 
     // تشفير الباسورد
     // const hash = await bcrypt.hash(password, 10);
@@ -59,7 +58,9 @@ export async function register(req, res) {
       user: { id: user._id, username, email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "فيه مشكلة في السيرفر", error: err.message });
   }
 }
 
@@ -69,12 +70,11 @@ export async function login(req, res) {
 
     // جِيب المستخدم + الباسورد (select:false في السكيمة)
     const user = await User.findOne({ email }).select("+password");
-    if (!user) return res.status(400).json({ message: "Invalid credentials." });
+    if (!user) return res.status(400).json({ message: "البيانات غلط." });
 
     // قارن الباسورد
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res.status(400).json({ message: "Invalid credentials." });
+    if (!match) return res.status(400).json({ message: "البيانات غلط." });
 
     const token = generateToken(user);
     res.json({
@@ -82,7 +82,9 @@ export async function login(req, res) {
       user: { id: user._id, username: user.username, email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({ message: "فيه مشكلة في السيرفر", error: err.message });
   }
 }
 
@@ -94,7 +96,7 @@ export const forgotPassword = async (req, res) => {
   if (!user)
     return res
       .status(200)
-      .json({ message: "If user exists, reset link sent." });
+      .json({ message: "لو المستخدم موجود، هنبعتلك لينك على الإيميل." });
 
   const resetToken = crypto.randomBytes(32).toString("hex");
   const hashed = crypto.createHash("sha256").update(resetToken).digest("hex");
@@ -124,7 +126,9 @@ export const forgotPassword = async (req, res) => {
   // هنا تبعت الإيميل فعليًا باستخدام nodemailer أو أي خدمة
   console.log(`🔗 Reset URL: ${resetUrl}`);
 
-  res.json({ message: "Reset link sent (check console if testing)." });
+  res.json({
+    message: "لينك إعادة تعيين الباسورد اتبعت (بص في الكونسول لو بتجرب).",
+  });
 };
 
 export const resetPassword = async (req, res) => {
@@ -139,7 +143,7 @@ export const resetPassword = async (req, res) => {
   });
 
   if (!user)
-    return res.status(400).json({ message: "Invalid or expired token." });
+    return res.status(400).json({ message: "اللينك غلط أو انتهت صلاحيته." });
 
   user.password = req.body.password;
   user.resetPasswordToken = undefined;
@@ -147,5 +151,5 @@ export const resetPassword = async (req, res) => {
 
   await user.save();
 
-  res.json({ message: "Password has been reset." });
+  res.json({ message: "تم تغيير الباسورد بنجاح." });
 };
